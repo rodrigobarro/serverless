@@ -1,19 +1,23 @@
 const api = require('lambda-api')();
+const knex = require(`${__dirname}/knex/knex.js`);
 
-api.get('/employees', async (req, res) => {
-    return { req, status: 'ok' };
-});
+api.get('/employee', async (req, res) => {
+    try {
+        const pageNumber = 1; 
+        const pageSize = 10; 
 
-api.get('/employees/:id', async (req, res) => {
-    return { req, status: 'ok' };
-});
+        const employees = await knex('information_schema.tables')
+            .where('table_schema', 'public') 
+            .limit(pageSize)
+            .offset((pageNumber - 1) * pageSize)
+            .select('employee');
 
-api.post('/employees', async (req, res) => {
-    return { req, status: 'ok' };
-});
-
-api.post('/employees', async (req, res) => {
-    return { req, status: 'ok' };
+        return { employees };
+    } catch (error) {
+        console.error('Error listing tables:', error);
+    } finally {
+        knex.destroy();
+    }
 });
 
 exports.handler = async (event, context) => {
